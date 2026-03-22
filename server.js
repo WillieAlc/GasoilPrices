@@ -2,7 +2,6 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 
-//const HOST = "127.0.0.1";
 const HOST = "0.0.0.0";
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
@@ -10,6 +9,7 @@ const API_BASE =
   "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes";
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const HISTORY_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const STATION_HISTORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const DEFAULT_PROVINCE_ID = "28";
 const DEFAULT_MUNICIPALITY_ID = "4282";
 const APP_VERSION = "1.0.0-beta-publica";
@@ -49,6 +49,7 @@ let provincesCache = {
 
 const municipalitiesCache = new Map();
 const historyCache = new Map();
+const stationHistorySeriesCache = new Map();
 
 const CONTENT_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -325,11 +326,25 @@ function buildPointFromCurrent(station, date) {
   };
 }
 
-async function getStationHistory(stationId, municipalityId, productId, days) {
-  const safeMunicipalityId = municipalityId || DEFAULT_MUNICIPALITY_ID;
-  const safeDays = Math.max(7, Math.min(Number(days) || 7, 365));
-  const fuel = fuelByProductId.get(String(productId));
+function buildStationHistorySeriesCacheKey(stationId, municipalityId, productId) {
+  return `${stationId}:${municipalityId}:${productId}`;
+}
 
+function trimStationSeries(points, safeDays) {
+  return points.slice(-safeDays);
+}
+
+async function buildStationHistorySeries(stationId, municipalityId, productId, safeDays) {
+  const safeMunicipalityId = municipalityId || DEFAULT_MUNICIPALITY_ID;
+  const cacheKey = buildStationHistorySeriesCacheKey(stationId, safeMunicipalityId, productId);
+  const cached = stationHistorySeriesCache.get(cacheKey);
+  const now = Date.now();
+
+  if (cached && now - cached.timestamp < STATION_HISTORY_CACHE_TTL_MS && cached.daysCovered >= safeDays) {
+    return trimStationSeries(cached.points, safeDays);
+  }
+
+  const fuel = fuelByProductId.get(String(productId));
   if (!fuel) {
     throw new Error("Carburante no soportado para el histórico.");
   }
@@ -341,14 +356,14 @@ async function getStationHistory(stationId, municipalityId, productId, days) {
   const today = new Date();
   today.setHours(12, 0, 0, 0);
 
-  const dates = [];
+  const historyDates = [];
   for (let offset = safeDays - 2; offset >= 0; offset -= 1) {
     const date = new Date(today);
     date.setDate(today.getDate() - (offset + 1));
-    dates.push(date);
+    historyDates.push(date);
   }
 
-  const rawResults = await mapWithConcurrency(dates, 8, async (date) => {
+  const rawResults = await mapWithConcurrency(historyDates, 8, async (date) => {
     const payload = await fetchHistoryDay(toApiDate(date), safeMunicipalityId, fuel.productId);
     const station = Array.isArray(payload.ListaEESSPrecio)
       ? payload.ListaEESSPrecio.find((item) => String(item.IDEESS) === String(stationId))
@@ -381,14 +396,30 @@ async function getStationHistory(stationId, municipalityId, productId, days) {
     points.push(buildPointFromCurrent(currentStation, today));
   }
 
-  const station = currentStation
-    ? {
-        id: currentStation.id,
-        name: currentStation.name,
-        address: currentStation.address,
-        locality: currentStation.locality
-      }
-    : points[0]?.station || null;
+  stationHistorySeriesCache.set(cacheKey, {
+    timestamp: now,
+    daysCovered: safeDays,
+    points
+  });
+
+  return points;
+}
+
+async function getStationHistory(stationId, municipalityId, productId, days) {
+  const safeMunicipalityId = municipalityId || DEFAULT_MUNICIPALITY_ID;
+  const safeDays = Math.max(7, Math.min(Number(days) || 7, 365));
+  const fuel = fuelByProductId.get(String(productId));
+
+  if (!fuel) {
+    throw new Error("Carburante no soportado para el histórico.");
+  }
+
+  const points = trimStationSeries(
+    await buildStationHistorySeries(stationId, safeMunicipalityId, fuel.productId, safeDays),
+    safeDays
+  );
+
+  const station = points[points.length - 1]?.station || points[0]?.station || null;
   const prices = points.map((point) => point.price);
 
   return {
@@ -532,5 +563,3 @@ const server = http.createServer(async (request, response) => {
 server.listen(PORT, HOST, () => {
   console.log(`Servidor disponible en http://${HOST}:${PORT}`);
 });
-
-
