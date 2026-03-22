@@ -1,7 +1,9 @@
 ﻿import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-const storageKey = "fuel-app-selection";
+const selectionStorageKey = "fuel-app-selection";
+const favoritesStorageKey = "fuel-app-favorites";
+const scrollStorageKey = "fuel-app-home-scroll";
 const fallbackProvinceId = "28";
 const ranges = [
   { value: 7, label: "Semana" },
@@ -14,7 +16,7 @@ const ranges = [
 
 function readStoredSelection() {
   try {
-    const raw = window.localStorage.getItem(storageKey);
+    const raw = window.localStorage.getItem(selectionStorageKey);
     if (!raw) {
       return null;
     }
@@ -35,7 +37,54 @@ function readStoredSelection() {
 
 function writeStoredSelection(provinceId, municipalityId) {
   try {
-    window.localStorage.setItem(storageKey, JSON.stringify({ provinceId, municipalityId }));
+    window.localStorage.setItem(
+      selectionStorageKey,
+      JSON.stringify({ provinceId, municipalityId })
+    );
+  } catch {
+    // ignore storage failures
+  }
+}
+
+function readStoredFavorites() {
+  try {
+    const raw = window.localStorage.getItem(favoritesStorageKey);
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredFavorites(favorites) {
+  try {
+    window.localStorage.setItem(favoritesStorageKey, JSON.stringify(favorites));
+  } catch {
+    // ignore storage failures
+  }
+}
+
+function saveHomeScroll() {
+  try {
+    window.sessionStorage.setItem(scrollStorageKey, String(window.scrollY || 0));
+  } catch {
+    // ignore storage failures
+  }
+}
+
+function restoreHomeScroll() {
+  try {
+    const raw = window.sessionStorage.getItem(scrollStorageKey);
+    if (!raw) {
+      return;
+    }
+
+    window.sessionStorage.removeItem(scrollStorageKey);
+    window.scrollTo({ top: Number(raw) || 0, behavior: "auto" });
   } catch {
     // ignore storage failures
   }
@@ -86,6 +135,33 @@ function navigateTo(url) {
   window.location.href = url;
 }
 
+function updateHomeUrl(provinceId, municipalityId) {
+  const url = new URL(window.location.href);
+
+  if (provinceId) {
+    url.searchParams.set("provinceId", provinceId);
+  } else {
+    url.searchParams.delete("provinceId");
+  }
+
+  if (municipalityId) {
+    url.searchParams.set("municipalityId", municipalityId);
+  } else {
+    url.searchParams.delete("municipalityId");
+  }
+
+  window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+}
+
+async function copyCurrentUrl() {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function SummaryCard({ item }) {
   return (
     <section className="summary-card">
@@ -100,7 +176,15 @@ function Footer({ version }) {
   return <footer className="app-footer">Versión {version} · beta pública</footer>;
 }
 
-function StationRow({ station, index, total, productId, fuelName }) {
+function StationRow({
+  station,
+  index,
+  total,
+  productId,
+  fuelName,
+  isFavorite,
+  onToggleFavorite
+}) {
   const tone = getPriceTone(index, total);
   const params = new URLSearchParams({
     stationId: station.id,
@@ -115,14 +199,27 @@ function StationRow({ station, index, total, productId, fuelName }) {
     <li className="station-item" style={{ backgroundColor: tone }}>
       <p className="station-rank">#{index + 1}</p>
       <div className="station-main">
-        <p className="station-name">{station.name}</p>
+        <div className="station-title-row">
+          <p className="station-name">{station.name}</p>
+          <button
+            className={`favorite-button${isFavorite ? " active" : ""}`}
+            type="button"
+            aria-label={isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"}
+            onClick={() => onToggleFavorite(station.id)}
+          >
+            ★
+          </button>
+        </div>
         <p className="station-meta">{station.address}</p>
       </div>
       <p className="station-price">{formatPrice(station.price)}</p>
       <button
         className="chart-button"
         type="button"
-        onClick={() => navigateTo(`/historial?${params.toString()}`)}
+        onClick={() => {
+          saveHomeScroll();
+          navigateTo(`/historial?${params.toString()}`);
+        }}
       >
         Mostrar gráfica
       </button>
@@ -130,7 +227,7 @@ function StationRow({ station, index, total, productId, fuelName }) {
   );
 }
 
-function FuelCard({ result }) {
+function FuelCard({ result, favorites, onToggleFavorite }) {
   return (
     <article className="fuel-card">
       <div className="card-header">
@@ -162,6 +259,8 @@ function FuelCard({ result }) {
               total={result.stations.length}
               productId={result.productId}
               fuelName={result.name}
+              isFavorite={favorites.includes(station.id)}
+              onToggleFavorite={onToggleFavorite}
             />
           ))}
         </ol>
@@ -176,11 +275,18 @@ function FilterPanel({
   selectedProvinceId,
   selectedMunicipalityId,
   onProvinceChange,
-  onMunicipalityChange
+  onMunicipalityChange,
+  onShare,
+  shareStatus
 }) {
   return (
     <aside className="hero-card">
-      <p className="hero-card-label">Filtros</p>
+      <div className="filter-header">
+        <p className="hero-card-label">Filtros</p>
+        <button className="share-button" type="button" onClick={onShare}>
+          Copiar enlace
+        </button>
+      </div>
       <div className="filter-grid">
         <label className="filter-field">
           <span>Provincia</span>
@@ -209,6 +315,8 @@ function FilterPanel({
         </label>
       </div>
 
+      <p className="share-status">{shareStatus}</p>
+
       <ul className="filter-list compact">
         <li>Tipo de búsqueda: estaciones de servicio</li>
         <li>Venta: venta al público</li>
@@ -218,20 +326,28 @@ function FilterPanel({
 }
 
 function HomePage({ appConfig }) {
+  const urlParams = new URLSearchParams(window.location.search);
   const storedSelection = readStoredSelection();
+  const initialProvinceId = urlParams.get("provinceId") || storedSelection?.provinceId || appConfig.defaultProvinceId || fallbackProvinceId;
+  const initialMunicipalityId = urlParams.get("municipalityId") || storedSelection?.municipalityId || "";
+
   const [provinces, setProvinces] = useState([]);
   const [municipalities, setMunicipalities] = useState([]);
-  const [selectedProvinceId, setSelectedProvinceId] = useState(
-    storedSelection?.provinceId || appConfig.defaultProvinceId || fallbackProvinceId
-  );
-  const [selectedMunicipalityId, setSelectedMunicipalityId] = useState(
-    storedSelection?.municipalityId || ""
-  );
+  const [selectedProvinceId, setSelectedProvinceId] = useState(initialProvinceId);
+  const [selectedMunicipalityId, setSelectedMunicipalityId] = useState(initialMunicipalityId);
+  const [favorites, setFavorites] = useState(readStoredFavorites());
+  const [shareStatus, setShareStatus] = useState("");
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [filtersLoading, setFiltersLoading] = useState(true);
   const [reloadTick, setReloadTick] = useState(0);
+  const restoredScrollRef = useRef(false);
+
+  useEffect(() => {
+    restoreHomeScroll();
+    restoredScrollRef.current = true;
+  }, []);
 
   useEffect(() => {
     async function loadProvinces() {
@@ -278,8 +394,13 @@ function HomePage({ appConfig }) {
   useEffect(() => {
     if (selectedProvinceId) {
       writeStoredSelection(selectedProvinceId, selectedMunicipalityId);
+      updateHomeUrl(selectedProvinceId, selectedMunicipalityId);
     }
   }, [selectedProvinceId, selectedMunicipalityId]);
+
+  useEffect(() => {
+    writeStoredFavorites(favorites);
+  }, [favorites]);
 
   useEffect(() => {
     if (!selectedProvinceId || !selectedMunicipalityId) {
@@ -318,6 +439,20 @@ function HomePage({ appConfig }) {
   const selectedProvince = provinces.find((item) => item.id === selectedProvinceId);
   const selectedMunicipality = municipalities.find((item) => item.id === selectedMunicipalityId);
 
+  async function handleShare() {
+    const ok = await copyCurrentUrl();
+    setShareStatus(ok ? "Enlace copiado al portapapeles." : "No se pudo copiar el enlace.");
+    window.setTimeout(() => setShareStatus(""), 2500);
+  }
+
+  function handleToggleFavorite(stationId) {
+    setFavorites((current) =>
+      current.includes(stationId)
+        ? current.filter((item) => item !== stationId)
+        : [...current, stationId]
+    );
+  }
+
   return (
     <div className="app-shell">
       <div className="page-shell">
@@ -340,6 +475,8 @@ function HomePage({ appConfig }) {
               setSelectedMunicipalityId("");
             }}
             onMunicipalityChange={setSelectedMunicipalityId}
+            onShare={handleShare}
+            shareStatus={shareStatus}
           />
         </header>
 
@@ -385,7 +522,12 @@ function HomePage({ appConfig }) {
         ) : (
           <main className="cards-grid">
             {results.map((result) => (
-              <FuelCard key={result.id} result={result} />
+              <FuelCard
+                key={result.id}
+                result={result}
+                favorites={favorites}
+                onToggleFavorite={handleToggleFavorite}
+              />
             ))}
           </main>
         )}
@@ -598,7 +740,7 @@ function App() {
     version: "1.0.0-beta-publica",
     defaultProvinceId: fallbackProvinceId,
     defaultMunicipalityId: "",
-    analytics: { enabled: false, scriptUrl: "", siteId: "" }
+    analytics: { provider: "ga4", enabled: false, measurementId: "" }
   });
 
   useEffect(() => {
@@ -624,4 +766,7 @@ function App() {
 }
 
 createRoot(document.getElementById("root")).render(<App />);
+
+
+
 

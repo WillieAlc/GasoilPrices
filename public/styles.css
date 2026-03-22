@@ -122,6 +122,14 @@ h1 {
     var(--surface-strong);
 }
 
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .filter-grid {
   display: grid;
   gap: 14px;
@@ -147,6 +155,36 @@ h1 {
   color: var(--text);
 }
 
+.share-button,
+.refresh-button,
+.chart-button,
+.back-button,
+.range-chip,
+.favorite-button {
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.share-button {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--accent-dark);
+  border: 1px solid rgba(73, 108, 85, 0.12);
+  font-size: 0.82rem;
+}
+
+.share-status {
+  min-height: 18px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .filter-list {
   margin: 0;
   padding-left: 18px;
@@ -155,7 +193,7 @@ h1 {
 }
 
 .filter-list.compact {
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 .top-grid {
@@ -177,18 +215,6 @@ h1 {
   font-size: 0.98rem;
 }
 
-.refresh-button,
-.chart-button,
-.back-button,
-.range-chip {
-  border-radius: 999px;
-  cursor: pointer;
-  transition:
-    transform 160ms ease,
-    opacity 160ms ease,
-    background-color 160ms ease;
-}
-
 .refresh-button {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: white;
@@ -198,7 +224,9 @@ h1 {
 .refresh-button:hover:not(:disabled),
 .chart-button:hover,
 .back-button:hover,
-.range-chip:hover {
+.range-chip:hover,
+.share-button:hover,
+.favorite-button:hover {
   transform: translateY(-1px);
 }
 
@@ -345,9 +373,33 @@ h1 {
   min-width: 0;
 }
 
+.station-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .station-name {
   font-size: 0.96rem;
   font-weight: 700;
+}
+
+.favorite-button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(73, 108, 85, 0.55);
+  border: 1px solid rgba(73, 108, 85, 0.12);
+  flex: 0 0 auto;
+}
+
+.favorite-button.active {
+  color: #d2a72c;
+  background: rgba(255, 248, 214, 0.92);
 }
 
 .station-meta {
@@ -494,8 +546,10 @@ h1 {
     grid-column: 2;
   }
 
-  .card-header {
+  .card-header,
+  .filter-header {
     flex-direction: column;
+    align-items: start;
   }
 
   .card-stats {

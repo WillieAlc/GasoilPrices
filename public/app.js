@@ -21722,7 +21722,9 @@
   var import_react = __toESM(require_react());
   var import_client = __toESM(require_client());
   var import_jsx_runtime = __toESM(require_jsx_runtime());
-  var storageKey = "fuel-app-selection";
+  var selectionStorageKey = "fuel-app-selection";
+  var favoritesStorageKey = "fuel-app-favorites";
+  var scrollStorageKey = "fuel-app-home-scroll";
   var fallbackProvinceId = "28";
   var ranges = [
     { value: 7, label: "Semana" },
@@ -21734,7 +21736,7 @@
   ];
   function readStoredSelection() {
     try {
-      const raw = window.localStorage.getItem(storageKey);
+      const raw = window.localStorage.getItem(selectionStorageKey);
       if (!raw) {
         return null;
       }
@@ -21752,7 +21754,45 @@
   }
   function writeStoredSelection(provinceId, municipalityId) {
     try {
-      window.localStorage.setItem(storageKey, JSON.stringify({ provinceId, municipalityId }));
+      window.localStorage.setItem(
+        selectionStorageKey,
+        JSON.stringify({ provinceId, municipalityId })
+      );
+    } catch {
+    }
+  }
+  function readStoredFavorites() {
+    try {
+      const raw = window.localStorage.getItem(favoritesStorageKey);
+      if (!raw) {
+        return [];
+      }
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  function writeStoredFavorites(favorites) {
+    try {
+      window.localStorage.setItem(favoritesStorageKey, JSON.stringify(favorites));
+    } catch {
+    }
+  }
+  function saveHomeScroll() {
+    try {
+      window.sessionStorage.setItem(scrollStorageKey, String(window.scrollY || 0));
+    } catch {
+    }
+  }
+  function restoreHomeScroll() {
+    try {
+      const raw = window.sessionStorage.getItem(scrollStorageKey);
+      if (!raw) {
+        return;
+      }
+      window.sessionStorage.removeItem(scrollStorageKey);
+      window.scrollTo({ top: Number(raw) || 0, behavior: "auto" });
     } catch {
     }
   }
@@ -21792,6 +21832,28 @@
   function navigateTo(url) {
     window.location.href = url;
   }
+  function updateHomeUrl(provinceId, municipalityId) {
+    const url = new URL(window.location.href);
+    if (provinceId) {
+      url.searchParams.set("provinceId", provinceId);
+    } else {
+      url.searchParams.delete("provinceId");
+    }
+    if (municipalityId) {
+      url.searchParams.set("municipalityId", municipalityId);
+    } else {
+      url.searchParams.delete("municipalityId");
+    }
+    window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+  }
+  async function copyCurrentUrl() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      return true;
+    } catch {
+      return false;
+    }
+  }
   function SummaryCard({ item }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "summary-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "summary-label", children: "Media de hoy" }),
@@ -21806,7 +21868,15 @@
       " \xB7 beta p\xFAblica"
     ] });
   }
-  function StationRow({ station, index, total, productId, fuelName }) {
+  function StationRow({
+    station,
+    index,
+    total,
+    productId,
+    fuelName,
+    isFavorite,
+    onToggleFavorite
+  }) {
     const tone = getPriceTone(index, total);
     const params = new URLSearchParams({
       stationId: station.id,
@@ -21822,7 +21892,19 @@
         index + 1
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "station-main", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "station-name", children: station.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "station-title-row", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "station-name", children: station.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "button",
+            {
+              className: `favorite-button${isFavorite ? " active" : ""}`,
+              type: "button",
+              "aria-label": isFavorite ? "Quitar de favoritos" : "A\xF1adir a favoritos",
+              onClick: () => onToggleFavorite(station.id),
+              children: "\u2605"
+            }
+          )
+        ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "station-meta", children: station.address })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "station-price", children: formatPrice(station.price) }),
@@ -21831,13 +21913,16 @@
         {
           className: "chart-button",
           type: "button",
-          onClick: () => navigateTo(`/historial?${params.toString()}`),
+          onClick: () => {
+            saveHomeScroll();
+            navigateTo(`/historial?${params.toString()}`);
+          },
           children: "Mostrar gr\xE1fica"
         }
       )
     ] });
   }
-  function FuelCard({ result }) {
+  function FuelCard({ result, favorites, onToggleFavorite }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("article", { className: "fuel-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "card-header", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -21867,7 +21952,9 @@
           index,
           total: result.stations.length,
           productId: result.productId,
-          fuelName: result.name
+          fuelName: result.name,
+          isFavorite: favorites.includes(station.id),
+          onToggleFavorite
         },
         `${result.id}-${station.id}`
       )) })
@@ -21879,10 +21966,15 @@
     selectedProvinceId,
     selectedMunicipalityId,
     onProvinceChange,
-    onMunicipalityChange
+    onMunicipalityChange,
+    onShare,
+    shareStatus
   }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("aside", { className: "hero-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "hero-card-label", children: "Filtros" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "filter-header", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "hero-card-label", children: "Filtros" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "share-button", type: "button", onClick: onShare, children: "Copiar enlace" })
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "filter-grid", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "filter-field", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Provincia" }),
@@ -21903,6 +21995,7 @@
           )
         ] })
       ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "share-status", children: shareStatus }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", { className: "filter-list compact", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Tipo de b\xFAsqueda: estaciones de servicio" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Venta: venta al p\xFAblico" })
@@ -21910,20 +22003,26 @@
     ] });
   }
   function HomePage({ appConfig }) {
+    const urlParams = new URLSearchParams(window.location.search);
     const storedSelection = readStoredSelection();
+    const initialProvinceId = urlParams.get("provinceId") || storedSelection?.provinceId || appConfig.defaultProvinceId || fallbackProvinceId;
+    const initialMunicipalityId = urlParams.get("municipalityId") || storedSelection?.municipalityId || "";
     const [provinces, setProvinces] = (0, import_react.useState)([]);
     const [municipalities, setMunicipalities] = (0, import_react.useState)([]);
-    const [selectedProvinceId, setSelectedProvinceId] = (0, import_react.useState)(
-      storedSelection?.provinceId || appConfig.defaultProvinceId || fallbackProvinceId
-    );
-    const [selectedMunicipalityId, setSelectedMunicipalityId] = (0, import_react.useState)(
-      storedSelection?.municipalityId || ""
-    );
+    const [selectedProvinceId, setSelectedProvinceId] = (0, import_react.useState)(initialProvinceId);
+    const [selectedMunicipalityId, setSelectedMunicipalityId] = (0, import_react.useState)(initialMunicipalityId);
+    const [favorites, setFavorites] = (0, import_react.useState)(readStoredFavorites());
+    const [shareStatus, setShareStatus] = (0, import_react.useState)("");
     const [data, setData] = (0, import_react.useState)(null);
     const [error, setError] = (0, import_react.useState)("");
     const [loading, setLoading] = (0, import_react.useState)(false);
     const [filtersLoading, setFiltersLoading] = (0, import_react.useState)(true);
     const [reloadTick, setReloadTick] = (0, import_react.useState)(0);
+    const restoredScrollRef = useRef(false);
+    (0, import_react.useEffect)(() => {
+      restoreHomeScroll();
+      restoredScrollRef.current = true;
+    }, []);
     (0, import_react.useEffect)(() => {
       async function loadProvinces() {
         try {
@@ -21965,8 +22064,12 @@
     (0, import_react.useEffect)(() => {
       if (selectedProvinceId) {
         writeStoredSelection(selectedProvinceId, selectedMunicipalityId);
+        updateHomeUrl(selectedProvinceId, selectedMunicipalityId);
       }
     }, [selectedProvinceId, selectedMunicipalityId]);
+    (0, import_react.useEffect)(() => {
+      writeStoredFavorites(favorites);
+    }, [favorites]);
     (0, import_react.useEffect)(() => {
       if (!selectedProvinceId || !selectedMunicipalityId) {
         setData(null);
@@ -21999,6 +22102,16 @@
     const summary = data?.summary ?? [];
     const selectedProvince = provinces.find((item) => item.id === selectedProvinceId);
     const selectedMunicipality = municipalities.find((item) => item.id === selectedMunicipalityId);
+    async function handleShare() {
+      const ok = await copyCurrentUrl();
+      setShareStatus(ok ? "Enlace copiado al portapapeles." : "No se pudo copiar el enlace.");
+      window.setTimeout(() => setShareStatus(""), 2500);
+    }
+    function handleToggleFavorite(stationId) {
+      setFavorites(
+        (current) => current.includes(stationId) ? current.filter((item) => item !== stationId) : [...current, stationId]
+      );
+    }
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "app-shell", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "page-shell", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { className: "hero", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "hero-copy compact-hero", children: [
@@ -22019,7 +22132,9 @@
               setSelectedProvinceId(provinceId);
               setSelectedMunicipalityId("");
             },
-            onMunicipalityChange: setSelectedMunicipalityId
+            onMunicipalityChange: setSelectedMunicipalityId,
+            onShare: handleShare,
+            shareStatus
           }
         )
       ] }),
@@ -22046,7 +22161,15 @@
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "summary-meta", children: "Elige un municipio para ver precios y medias." })
         ] }) })
       ] }),
-      error ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "error-panel", children: error }) : !selectedMunicipalityId ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Selecciona un municipio para cargar el listado de gasolineras." }) : loading || filtersLoading ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Cargando datos del municipio seleccionado..." }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { className: "cards-grid", children: results.map((result) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FuelCard, { result }, result.id)) }),
+      error ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "error-panel", children: error }) : !selectedMunicipalityId ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Selecciona un municipio para cargar el listado de gasolineras." }) : loading || filtersLoading ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Cargando datos del municipio seleccionado..." }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { className: "cards-grid", children: results.map((result) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+        FuelCard,
+        {
+          result,
+          favorites,
+          onToggleFavorite: handleToggleFavorite
+        },
+        result.id
+      )) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Footer, { version: appConfig.version })
     ] }) });
   }
@@ -22196,7 +22319,7 @@
       version: "1.0.0-beta-publica",
       defaultProvinceId: fallbackProvinceId,
       defaultMunicipalityId: "",
-      analytics: { enabled: false, scriptUrl: "", siteId: "" }
+      analytics: { provider: "ga4", enabled: false, measurementId: "" }
     });
     (0, import_react.useEffect)(() => {
       async function loadAppConfig() {
