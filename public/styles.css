@@ -352,7 +352,8 @@ h1 {
 .station-rank,
 .station-name,
 .station-price,
-.station-meta {
+.station-meta,
+.station-change {
   margin: 0;
 }
 
@@ -423,10 +424,45 @@ h1 {
   line-height: 1.32;
 }
 
+.station-price-block {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
 .station-price {
   font-size: 1rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.station-change {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--muted);
+  border: 1px solid rgba(67, 90, 78, 0.08);
+}
+
+.station-change.down {
+  background: rgba(209, 243, 214, 0.9);
+  color: #2b6a39;
+  border-color: rgba(43, 106, 57, 0.12);
+}
+
+.station-change.up {
+  background: rgba(255, 226, 220, 0.92);
+  color: #9a493d;
+  border-color: rgba(154, 73, 61, 0.14);
+}
+
+.station-change.flat {
+  background: rgba(250, 241, 202, 0.92);
+  color: #8a6b17;
+  border-color: rgba(138, 107, 23, 0.14);
 }
 
 .chart-button,
@@ -555,9 +591,13 @@ h1 {
     height: 38px;
   }
 
-  .station-price,
+  .station-price-block,
   .chart-button {
     grid-column: 2;
+  }
+
+  .station-price-block {
+    justify-items: start;
   }
 
   .card-header,

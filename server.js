@@ -1,4 +1,4 @@
-﻿const http = require("node:http");
+const http = require("node:http");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 
@@ -134,7 +134,9 @@ function buildFuelList(stations, fuel) {
         provinceId: station.IDProvincia,
         price,
         productId: fuel.productId,
-        fuelName: fuel.label
+        fuelName: fuel.label,
+        yesterdayPrice: null,
+        priceChange: null
       };
     })
     .filter(Boolean)
@@ -228,6 +230,50 @@ async function getMunicipalities(provinceId) {
   return municipalities;
 }
 
+async function getPriceChangesByFuel(municipalityId) {
+  const yesterday = new Date();
+  yesterday.setHours(12, 0, 0, 0);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const payloads = await mapWithConcurrency(FILTERS.fuels, FILTERS.fuels.length, async (fuel) => {
+    const payload = await fetchHistoryDay(toApiDate(yesterday), municipalityId, fuel.productId);
+    const stations = Array.isArray(payload.ListaEESSPrecio) ? payload.ListaEESSPrecio : [];
+    const stationPriceMap = new Map();
+
+    stations.forEach((station) => {
+      const price = parseEuroPrice(station.PrecioProducto);
+      if (price !== null) {
+        stationPriceMap.set(String(station.IDEESS), price);
+      }
+    });
+
+    return [fuel.productId, stationPriceMap];
+  });
+
+  return new Map(payloads);
+}
+
+function addPriceChangesToResults(results, priceChangesByFuel) {
+  return results.map((result) => {
+    const stationPriceMap = priceChangesByFuel.get(String(result.productId)) || new Map();
+
+    return {
+      ...result,
+      stations: result.stations.map((station) => {
+        const yesterdayPrice = stationPriceMap.get(String(station.id));
+        const priceChange =
+          yesterdayPrice === undefined ? null : Number((station.price - yesterdayPrice).toFixed(3));
+
+        return {
+          ...station,
+          yesterdayPrice: yesterdayPrice ?? null,
+          priceChange
+        };
+      })
+    };
+  });
+}
+
 async function getFilteredPrices(provinceId, municipalityId) {
   const safeProvinceId = provinceId || DEFAULT_PROVINCE_ID;
   const rawData = await getCurrentRawData();
@@ -243,7 +289,16 @@ async function getFilteredPrices(provinceId, municipalityId) {
 
   const provinceName = stations[0]?.Provincia || null;
   const municipalityName = municipalityId ? stations[0]?.Municipio || null : null;
-  const results = municipalityId ? FILTERS.fuels.map((fuel) => buildFuelList(stations, fuel)) : [];
+  let results = municipalityId ? FILTERS.fuels.map((fuel) => buildFuelList(stations, fuel)) : [];
+
+  if (municipalityId && results.length > 0) {
+    try {
+      const priceChangesByFuel = await getPriceChangesByFuel(municipalityId);
+      results = addPriceChangesToResults(results, priceChangesByFuel);
+    } catch {
+      // keep current prices available even if yesterday history fails
+    }
+  }
 
   return {
     sourceTimestamp: rawData.Fecha || null,
