@@ -2,7 +2,8 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 
-const HOST = "127.0.0.1";
+//const HOST = "127.0.0.1";
+const HOST = "0.0.0.0";
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
 const API_BASE =
