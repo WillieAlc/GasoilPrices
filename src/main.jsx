@@ -7,11 +7,11 @@ const scrollStorageKey = "fuel-app-home-scroll";
 const fallbackProvinceId = "28";
 const ranges = [
   { value: 7, label: "Semana" },
-  { value: 15, label: "15 d\u00edas" },
+  { value: 15, label: "15 días" },
   { value: 30, label: "Mes" },
   { value: 90, label: "3 meses" },
   { value: 180, label: "6 meses" },
-  { value: 365, label: "1 a\u00f1o" }
+  { value: 365, label: "1 año" }
 ];
 
 function readStoredSelection() {
@@ -125,7 +125,7 @@ function formatPrice(price) {
     return "Sin dato";
   }
 
-  return `${price.toFixed(3).replace(".", ",")} \u20ac/L`;
+  return `${price.toFixed(3).replace(".", ",")} €/L`;
 }
 
 function formatPriceChange(change) {
@@ -138,7 +138,7 @@ function formatPriceChange(change) {
   }
 
   const prefix = change > 0 ? "+" : "-";
-  return `${prefix}${Math.abs(change).toFixed(3).replace(".", ",")} \u20ac/L vs ayer`;
+  return `${prefix}${Math.abs(change).toFixed(3).replace(".", ",")} €/L vs ayer`;
 }
 
 function getPriceChangeClass(change) {
@@ -209,7 +209,7 @@ function SummaryCard({ item }) {
 }
 
 function Footer({ version }) {
-  return <footer className="app-footer">Versi\u00f3n {version} \u00b7 beta p\u00fablica</footer>;
+  return <footer className="app-footer">Versión {version} · beta pública</footer>;
 }
 
 function StationRow({
@@ -240,7 +240,7 @@ function StationRow({
           <button
             className={`favorite-button${isFavorite ? " active" : ""}`}
             type="button"
-            aria-label={isFavorite ? "Quitar de favoritos" : "A\u00f1adir a favoritos"}
+            aria-label={isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"}
             onClick={() => onToggleFavorite(station.id)}
           >
             {"\u2605"}
@@ -262,7 +262,7 @@ function StationRow({
           navigateTo(`/historial?${params.toString()}`);
         }}
       >
-        Mostrar gr\u00e1fica
+        Mostrar gráfica
       </button>
     </li>
   );
@@ -283,9 +283,9 @@ function FuelCard({ result, favorites, onToggleFavorite }) {
       </div>
 
       <div className="legend">
-        <span>M\u00e1s barata</span>
+        <span>Más barata</span>
         <div className="legend-bar" />
-        <span>M\u00e1s cara</span>
+        <span>Más cara</span>
       </div>
 
       {result.stations.length === 0 ? (
@@ -359,8 +359,8 @@ function FilterPanel({
       <p className="share-status">{shareStatus}</p>
 
       <ul className="filter-list compact">
-        <li>Tipo de b\u00fasqueda: estaciones de servicio</li>
-        <li>Venta: venta al p\u00fablico</li>
+        <li>Tipo de búsqueda: estaciones de servicio</li>
+        <li>Venta: venta al público</li>
       </ul>
     </aside>
   );
@@ -465,7 +465,7 @@ function HomePage({ appConfig }) {
         const response = await fetch(`/api/prices?${query.toString()}`, { cache: "no-store" });
         const payload = await response.json();
         if (!response.ok) {
-          throw new Error(payload.error || "No se pudo cargar la informaci\u00f3n.");
+          throw new Error(payload.error || "No se pudo cargar la información.");
         }
         setData(payload);
       } catch (loadError) {
@@ -527,7 +527,7 @@ function HomePage({ appConfig }) {
         <section className="top-grid">
           <section className="status-panel">
             <div>
-              <p className="status-label">Actualizaci\u00f3n</p>
+              <p className="status-label">Actualización</p>
               <p className="status-value">
                 {selectedMunicipalityId
                   ? data?.sourceTimestampFormatted ?? (loading ? "Cargando datos..." : "Sin datos")
@@ -551,7 +551,7 @@ function HomePage({ appConfig }) {
               <section className="summary-card summary-card-wide">
                 <p className="summary-label">Media de hoy</p>
                 <p className="summary-value">
-                  {selectedMunicipalityId ? "Sin datos" : "Esperando selecci\u00f3n"}
+                  {selectedMunicipalityId ? "Sin datos" : "Esperando selección"}
                 </p>
                 <p className="summary-meta">Elige un municipio para ver precios y medias.</p>
               </section>
@@ -625,7 +625,7 @@ function Chart({ points }) {
   const padding = 38;
 
   if (points.length === 0) {
-    return <div className="chart-empty">No hay suficientes datos hist\u00f3ricos para esta estaci\u00f3n.</div>;
+    return <div className="chart-empty">No hay suficientes datos históricos para esta estación.</div>;
   }
 
   const coordinates = buildCoordinates(points, width, height, padding);
@@ -647,7 +647,7 @@ function Chart({ points }) {
 
   return (
     <div className="chart-shell">
-      <svg viewBox={`0 0 ${width} ${height}`} className="chart-svg" role="img" aria-label="Evoluci\u00f3n hist\u00f3rica del precio">
+      <svg viewBox={`0 0 ${width} ${height}`} className="chart-svg" role="img" aria-label="Evolución histórica del precio">
         <defs>
           <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#5b9b6b" />
@@ -688,7 +688,7 @@ function HistoryPage({ appConfig }) {
   const municipalityId = params.get("municipalityId") || appConfig.defaultMunicipalityId || "";
   const productId = params.get("productId") || "";
   const initialFuelName = params.get("fuelName") || "Carburante";
-  const initialStationName = params.get("stationName") || "Estaci\u00f3n";
+  const initialStationName = params.get("stationName") || "Estación";
   const initialAddress = params.get("address") || "";
   const backUrl = `/?provinceId=${appConfig.defaultProvinceId || fallbackProvinceId}&municipalityId=${municipalityId}`;
 
@@ -713,7 +713,7 @@ function HistoryPage({ appConfig }) {
         const payload = await response.json();
 
         if (!response.ok) {
-          throw new Error(payload.error || "No se pudo cargar el hist\u00f3rico.");
+          throw new Error(payload.error || "No se pudo cargar el histórico.");
         }
 
         setData(payload);
@@ -735,7 +735,7 @@ function HistoryPage({ appConfig }) {
             <button className="back-button" type="button" onClick={() => navigateTo(backUrl)}>
               Volver al listado
             </button>
-            <p className="eyebrow">Hist\u00f3rico de precios</p>
+            <p className="eyebrow">Histórico de precios</p>
             <h1 className="history-title">{data?.station?.name || initialStationName}</h1>
             <p className="hero-text">{data?.station?.address || initialAddress}</p>
             <p className="history-subtitle">{data?.fuel?.name || initialFuelName}</p>
@@ -743,11 +743,11 @@ function HistoryPage({ appConfig }) {
 
           <div className="history-stats">
             <div className="summary-card">
-              <p className="summary-label">\u00daltimo precio</p>
+              <p className="summary-label">Último precio</p>
               <p className="summary-value">{formatPrice(data?.stats?.latestPrice)}</p>
             </div>
             <div className="summary-card">
-              <p className="summary-label">M\u00ednimo del tramo</p>
+              <p className="summary-label">Mínimo del tramo</p>
               <p className="summary-value">{formatPrice(data?.stats?.minPrice)}</p>
             </div>
           </div>
@@ -769,7 +769,7 @@ function HistoryPage({ appConfig }) {
         {error ? (
           <article className="error-panel">{error}</article>
         ) : loading ? (
-          <article className="fuel-card">Cargando hist\u00f3rico...</article>
+          <article className="fuel-card">Cargando histórico...</article>
         ) : (
           <section className="history-card">
             <Chart points={data?.points ?? []} />
