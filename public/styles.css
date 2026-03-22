@@ -341,7 +341,7 @@ h1 {
 
 .station-item {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto auto;
+  grid-template-columns: 42px minmax(0, 1fr) minmax(150px, 168px) auto;
   gap: 12px;
   align-items: center;
   padding: 10px 12px;
