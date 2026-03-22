@@ -83,8 +83,15 @@ function restoreHomeScroll() {
       return;
     }
 
+    const target = Number(raw) || 0;
     window.sessionStorage.removeItem(scrollStorageKey);
-    window.scrollTo({ top: Number(raw) || 0, behavior: "auto" });
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: target, behavior: "auto" });
+      window.setTimeout(() => {
+        window.scrollTo({ top: target, behavior: "auto" });
+      }, 250);
+    });
   } catch {
     // ignore storage failures
   }
@@ -328,8 +335,13 @@ function FilterPanel({
 function HomePage({ appConfig }) {
   const urlParams = new URLSearchParams(window.location.search);
   const storedSelection = readStoredSelection();
-  const initialProvinceId = urlParams.get("provinceId") || storedSelection?.provinceId || appConfig.defaultProvinceId || fallbackProvinceId;
-  const initialMunicipalityId = urlParams.get("municipalityId") || storedSelection?.municipalityId || "";
+  const initialProvinceId =
+    urlParams.get("provinceId") ||
+    storedSelection?.provinceId ||
+    appConfig.defaultProvinceId ||
+    fallbackProvinceId;
+  const initialMunicipalityId =
+    urlParams.get("municipalityId") || storedSelection?.municipalityId || "";
 
   const [provinces, setProvinces] = useState([]);
   const [municipalities, setMunicipalities] = useState([]);
@@ -504,7 +516,9 @@ function HomePage({ appConfig }) {
             ) : (
               <section className="summary-card summary-card-wide">
                 <p className="summary-label">Media de hoy</p>
-                <p className="summary-value">{selectedMunicipalityId ? "Sin datos" : "Esperando selección"}</p>
+                <p className="summary-value">
+                  {selectedMunicipalityId ? "Sin datos" : "Esperando selección"}
+                </p>
                 <p className="summary-meta">Elige un municipio para ver precios y medias.</p>
               </section>
             )}
@@ -642,6 +656,7 @@ function HistoryPage({ appConfig }) {
   const initialFuelName = params.get("fuelName") || "Carburante";
   const initialStationName = params.get("stationName") || "Estación";
   const initialAddress = params.get("address") || "";
+  const backUrl = `/?provinceId=${appConfig.defaultProvinceId || fallbackProvinceId}&municipalityId=${municipalityId}`;
 
   const [days, setDays] = useState(30);
   const [data, setData] = useState(null);
@@ -683,7 +698,7 @@ function HistoryPage({ appConfig }) {
       <div className="page-shell">
         <section className="history-header">
           <div>
-            <button className="back-button" type="button" onClick={() => navigateTo("/")}>
+            <button className="back-button" type="button" onClick={() => navigateTo(backUrl)}>
               Volver al listado
             </button>
             <p className="eyebrow">Histórico de precios</p>
@@ -764,8 +779,3 @@ function App() {
 }
 
 createRoot(document.getElementById("root")).render(<App />);
-
-
-
-
-

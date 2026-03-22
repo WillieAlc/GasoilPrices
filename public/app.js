@@ -21791,8 +21791,14 @@
       if (!raw) {
         return;
       }
+      const target = Number(raw) || 0;
       window.sessionStorage.removeItem(scrollStorageKey);
-      window.scrollTo({ top: Number(raw) || 0, behavior: "auto" });
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: target, behavior: "auto" });
+        window.setTimeout(() => {
+          window.scrollTo({ top: target, behavior: "auto" });
+        }, 250);
+      });
     } catch {
     }
   }
@@ -22249,6 +22255,7 @@
     const initialFuelName = params.get("fuelName") || "Carburante";
     const initialStationName = params.get("stationName") || "Estaci\xF3n";
     const initialAddress = params.get("address") || "";
+    const backUrl = `/?provinceId=${appConfig.defaultProvinceId || fallbackProvinceId}&municipalityId=${municipalityId}`;
     const [days, setDays] = (0, import_react.useState)(30);
     const [data, setData] = (0, import_react.useState)(null);
     const [error, setError] = (0, import_react.useState)("");
@@ -22281,7 +22288,7 @@
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "app-shell history-shell", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "page-shell", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "history-header", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "back-button", type: "button", onClick: () => navigateTo("/"), children: "Volver al listado" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "back-button", type: "button", onClick: () => navigateTo(backUrl), children: "Volver al listado" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "eyebrow", children: "Hist\xF3rico de precios" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { className: "history-title", children: data?.station?.name || initialStationName }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "hero-text", children: data?.station?.address || initialAddress }),
