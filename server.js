@@ -14,9 +14,9 @@ const DEFAULT_PROVINCE_ID = "28";
 const DEFAULT_MUNICIPALITY_ID = "4282";
 const APP_VERSION = "1.0.0-beta-publica";
 const ANALYTICS_CONFIG = {
-  enabled: Boolean(process.env.ANALYTICS_SCRIPT_URL && process.env.ANALYTICS_SITE_ID),
-  scriptUrl: process.env.ANALYTICS_SCRIPT_URL || "",
-  siteId: process.env.ANALYTICS_SITE_ID || ""
+  provider: "ga4",
+  enabled: Boolean(process.env.GA_MEASUREMENT_ID),
+  measurementId: process.env.GA_MEASUREMENT_ID || ""
 };
 
 const FILTERS = {
@@ -532,3 +532,5 @@ const server = http.createServer(async (request, response) => {
 server.listen(PORT, HOST, () => {
   console.log(`Servidor disponible en http://${HOST}:${PORT}`);
 });
+
+

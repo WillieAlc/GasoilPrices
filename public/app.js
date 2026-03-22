@@ -21757,18 +21757,23 @@
     }
   }
   function setupAnalytics(config) {
-    if (!config?.enabled || !config.scriptUrl || !config.siteId) {
+    if (!config?.enabled || config.provider !== "ga4" || !config.measurementId) {
       return;
     }
-    if (document.querySelector(`script[data-analytics-site="${config.siteId}"]`)) {
+    if (document.querySelector(`script[data-ga4-id="${config.measurementId}"]`)) {
       return;
     }
     const script = document.createElement("script");
-    script.defer = true;
-    script.src = config.scriptUrl;
-    script.dataset.analyticsSite = config.siteId;
-    script.dataset.websiteId = config.siteId;
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${config.measurementId}`;
+    script.dataset.ga4Id = config.measurementId;
     document.head.appendChild(script);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function gtag() {
+      window.dataLayer.push(arguments);
+    };
+    window.gtag("js", /* @__PURE__ */ new Date());
+    window.gtag("config", config.measurementId);
   }
   function formatPrice(price) {
     if (price === null || price === void 0) {
