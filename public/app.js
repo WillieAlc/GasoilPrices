@@ -22018,10 +22018,8 @@
     const [loading, setLoading] = (0, import_react.useState)(false);
     const [filtersLoading, setFiltersLoading] = (0, import_react.useState)(true);
     const [reloadTick, setReloadTick] = (0, import_react.useState)(0);
-    const restoredScrollRef = useRef(false);
     (0, import_react.useEffect)(() => {
       restoreHomeScroll();
-      restoredScrollRef.current = true;
     }, []);
     (0, import_react.useEffect)(() => {
       async function loadProvinces() {

@@ -342,11 +342,9 @@ function HomePage({ appConfig }) {
   const [loading, setLoading] = useState(false);
   const [filtersLoading, setFiltersLoading] = useState(true);
   const [reloadTick, setReloadTick] = useState(0);
-  const restoredScrollRef = useRef(false);
 
   useEffect(() => {
     restoreHomeScroll();
-    restoredScrollRef.current = true;
   }, []);
 
   useEffect(() => {
@@ -766,6 +764,7 @@ function App() {
 }
 
 createRoot(document.getElementById("root")).render(<App />);
+
 
 
 
