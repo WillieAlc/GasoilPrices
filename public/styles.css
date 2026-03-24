@@ -376,7 +376,7 @@ h1 {
 
 .station-title-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 6px;
 }
@@ -427,6 +427,8 @@ h1 {
 .station-price-block {
   display: grid;
   justify-items: end;
+  align-content: center;
+  min-width: 136px;
   gap: 4px;
 }
 
@@ -437,10 +439,12 @@ h1 {
 }
 
 .station-change {
+  min-width: 112px;
   padding: 3px 7px;
   border-radius: 999px;
   font-size: 0.68rem;
   font-weight: 700;
+  text-align: center;
   white-space: nowrap;
   background: rgba(255, 255, 255, 0.74);
   color: var(--muted);
@@ -463,6 +467,83 @@ h1 {
   background: rgba(250, 241, 202, 0.92);
   color: #8a6b17;
   border-color: rgba(138, 107, 23, 0.14);
+}
+
+
+.compact-card-header {
+  margin-bottom: 8px;
+}
+
+.compact-card-title {
+  font-size: 1.02rem;
+}
+
+.favorites-panel {
+  padding: 14px 16px;
+}
+
+.favorites-header {
+  align-items: center;
+}
+
+.favorites-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.favorite-toggle-button {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(73, 108, 85, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--accent-dark);
+  cursor: pointer;
+  font-size: 0.76rem;
+}
+
+.favorite-stations-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.favorite-station-item {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(67, 90, 78, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(245, 249, 246, 0.9));
+}
+
+.favorite-station-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.favorite-station-copy {
+  min-width: 0;
+}
+
+.favorite-station-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.favorite-station-bottom .station-price {
+  font-size: 0.9rem;
+}
+
+.favorite-station-bottom .station-change {
+  min-width: 0;
 }
 
 .chart-button,
