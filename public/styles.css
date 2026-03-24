@@ -565,6 +565,9 @@ h1 {
 }
 
 @media (max-width: 760px) {
+  .favorite-stations-grid {
+    grid-template-columns: 1fr;
+  }
   .app-shell,
   .history-shell {
     width: min(100% - 18px, 1180px);
