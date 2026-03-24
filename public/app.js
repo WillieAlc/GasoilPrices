@@ -21894,6 +21894,9 @@
       return false;
     }
   }
+  function normalizeSearchText(value) {
+    return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  }
   function SummaryCard({ item }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "summary-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "summary-label", children: "Media de hoy" }),
@@ -21902,11 +21905,7 @@
     ] });
   }
   function Footer({ version }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { className: "app-footer", children: [
-      "Versi\\u00f3n ",
-      version,
-      " \\u00b7 beta p\\u00fablica"
-    ] });
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("footer", { className: "app-footer", children: `Versi\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xB3n ${version} \xC3\u0192\xE2\u20AC\u0161\xC3\u201A\xC2\xB7 beta p\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xBAblica` });
   }
   function StationRow({
     station,
@@ -21953,7 +21952,7 @@
             saveHomeScroll();
             navigateTo(historyUrl);
           },
-          children: "Mostrar gr\\u00e1fica"
+          children: "Mostrar gr\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xA1fica"
         }
       )
     ] });
@@ -21989,7 +21988,7 @@
               saveHomeScroll();
               navigateTo(buildHistoryUrl(station, station.productId, station.fuelName));
             },
-            children: "Mostrar gr\\u00e1fica"
+            children: "Mostrar gr\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xA1fica"
           }
         )
       ] })
@@ -22039,9 +22038,9 @@
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "legend", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "M\\u00e1s barata" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "M\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xA1s barata" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "legend-bar" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "M\\u00e1s cara" })
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "M\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xA1s cara" })
       ] }),
       result.stations.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "empty-state", children: "No hay precios disponibles para este carburante." }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ol", { className: "station-list", children: result.stations.map((station, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
         StationRow,
@@ -22063,8 +22062,10 @@
     municipalities,
     selectedProvinceId,
     selectedMunicipalityId,
+    searchQuery,
     onProvinceChange,
     onMunicipalityChange,
+    onSearchChange,
     onShare,
     shareStatus
   }) {
@@ -22091,12 +22092,25 @@
               ]
             }
           )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "filter-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Buscar estaci\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xB3n o calle" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "input",
+            {
+              className: "search-input",
+              type: "search",
+              value: searchQuery,
+              onChange: (event) => onSearchChange(event.target.value),
+              placeholder: "Ej. Ballenoil o Avenida Europa"
+            }
+          )
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "share-status", children: shareStatus }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", { className: "filter-list compact", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Tipo de b\\u00fasqueda: estaciones de servicio" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Venta: venta al p\\u00fablico" })
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Tipo de b\xFAsqueda: estaciones de servicio" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Venta: venta al p\xFAblico" })
       ] })
     ] });
   }
@@ -22111,6 +22125,7 @@
     const [selectedMunicipalityId, setSelectedMunicipalityId] = (0, import_react.useState)(initialMunicipalityId);
     const [favorites, setFavorites] = (0, import_react.useState)(readStoredFavorites());
     const [favoritesExpanded, setFavoritesExpanded] = (0, import_react.useState)(false);
+    const [searchQuery, setSearchQuery] = (0, import_react.useState)("");
     const [shareStatus, setShareStatus] = (0, import_react.useState)("");
     const [data, setData] = (0, import_react.useState)(null);
     const [error, setError] = (0, import_react.useState)("");
@@ -22197,7 +22212,18 @@
     }, [selectedProvinceId, selectedMunicipalityId, reloadTick]);
     const results = data?.results ?? [];
     const summary = data?.summary ?? [];
-    const favoriteStations = results.flatMap(
+    const normalizedSearch = normalizeSearchText(searchQuery);
+    const filteredResults = results.map((result) => ({
+      ...result,
+      stations: result.stations.filter((station) => {
+        if (!normalizedSearch) {
+          return true;
+        }
+        const haystack = normalizeSearchText(`${station.name} ${station.address} ${station.locality || ""}`);
+        return haystack.includes(normalizedSearch);
+      })
+    }));
+    const favoriteStations = filteredResults.flatMap(
       (result) => result.stations.filter((station) => favorites.includes(station.id)).map((station) => ({ ...station, fuelName: result.name, productId: result.productId }))
     ).sort((left, right) => left.price - right.price || left.name.localeCompare(right.name));
     const selectedProvince = provinces.find((item) => item.id === selectedProvinceId);
@@ -22228,11 +22254,14 @@
             municipalities,
             selectedProvinceId,
             selectedMunicipalityId,
+            searchQuery,
             onProvinceChange: (provinceId) => {
               setSelectedProvinceId(provinceId);
               setSelectedMunicipalityId("");
+              setSearchQuery("");
             },
             onMunicipalityChange: setSelectedMunicipalityId,
+            onSearchChange: setSearchQuery,
             onShare: handleShare,
             shareStatus
           }
@@ -22241,7 +22270,7 @@
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "top-grid", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "status-panel", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "status-label", children: "Actualizaci\\u00f3n" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "status-label", children: "Actualizaci\xF3n" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "status-value", children: selectedMunicipalityId ? data?.sourceTimestampFormatted ?? (loading ? "Cargando datos..." : "Sin datos") : "Selecciona un municipio" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
@@ -22270,7 +22299,7 @@
           onToggleExpanded: () => setFavoritesExpanded((value) => !value)
         }
       ) : null,
-      error ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "error-panel", children: error }) : !selectedMunicipalityId ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Selecciona un municipio para cargar el listado de gasolineras." }) : loading || filtersLoading ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Cargando datos del municipio seleccionado..." }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { className: "cards-grid", children: results.map((result) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+      error ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "error-panel", children: error }) : !selectedMunicipalityId ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Selecciona un municipio para cargar el listado de gasolineras." }) : loading || filtersLoading ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Cargando datos del municipio seleccionado..." }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { className: "cards-grid", children: filteredResults.map((result) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
         FuelCard,
         {
           result,
@@ -22315,7 +22344,7 @@
     const height = 360;
     const padding = 38;
     if (points.length === 0) {
-      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "chart-empty", children: "No hay suficientes datos hist\\u00f3ricos para esta estaci\\u00f3n." });
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "chart-empty", children: "No hay suficientes datos hist\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xB3ricos para esta estaci\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xB3n." });
     }
     const coordinates = buildCoordinates(points, width, height, padding);
     const prices = points.map((point) => point.price);
@@ -22394,18 +22423,18 @@
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "history-header", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "back-button", type: "button", onClick: () => navigateTo(backUrl), children: "Volver al listado" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "eyebrow", children: "Hist\\u00f3rico de precios" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "eyebrow", children: "Hist\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xB3rico de precios" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { className: "history-title", children: data?.station?.name || initialStationName }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "hero-text", children: data?.station?.address || initialAddress }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "history-subtitle", children: data?.fuel?.name || initialFuelName })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "history-stats", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "summary-label", children: "\\u00daltimo precio" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "summary-label", children: "\xC3\u0192\xC6\u2019\xC3\u2026\xC2\xA1ltimo precio" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "summary-value", children: formatPrice(data?.stats?.latestPrice) })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "summary-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "summary-label", children: "M\\u00ednimo del tramo" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "summary-label", children: "M\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xADnimo del tramo" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "summary-value", children: formatPrice(data?.stats?.minPrice) })
           ] })
         ] })
@@ -22420,7 +22449,7 @@
         },
         range.value
       )) }),
-      error ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "error-panel", children: error }) : loading ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Cargando hist\\u00f3rico..." }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { className: "history-card", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chart, { points: data?.points ?? [] }) }),
+      error ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "error-panel", children: error }) : loading ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("article", { className: "fuel-card", children: "Cargando hist\xC3\u0192\xC6\u2019\xC3\u201A\xC2\xB3rico..." }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { className: "history-card", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Chart, { points: data?.points ?? [] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Footer, { version: appConfig.version })
     ] }) });
   }

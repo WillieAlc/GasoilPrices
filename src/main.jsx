@@ -212,6 +212,14 @@ async function copyCurrentUrl() {
   }
 }
 
+function normalizeSearchText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 function SummaryCard({ item }) {
   return (
     <section className="summary-card">
@@ -223,7 +231,7 @@ function SummaryCard({ item }) {
 }
 
 function Footer({ version }) {
-  return <footer className="app-footer">Versi\u00f3n {version} \u00b7 beta p\u00fablica</footer>;
+  return <footer className="app-footer">{`VersiÃƒÆ’Ã‚Â³n ${version} Ãƒâ€šÃ‚Â· beta pÃƒÆ’Ã‚Âºblica`}</footer>;
 }
 
 function StationRow({
@@ -269,7 +277,7 @@ function StationRow({
           navigateTo(historyUrl);
         }}
       >
-        Mostrar gr\u00e1fica
+        {"Mostrar grÃƒÆ’Ã‚Â¡fica"}
       </button>
     </li>
   );
@@ -306,7 +314,7 @@ function FavoriteStationRow({ station, onToggleFavorite }) {
             navigateTo(buildHistoryUrl(station, station.productId, station.fuelName));
           }}
         >
-          Mostrar gr\u00e1fica
+          {"Mostrar grÃƒÆ’Ã‚Â¡fica"}
         </button>
       </div>
     </li>
@@ -358,9 +366,9 @@ function FuelCard({ result, favorites, onToggleFavorite }) {
       </div>
 
       <div className="legend">
-        <span>M\u00e1s barata</span>
+        <span>{"MÃƒÆ’Ã‚Â¡s barata"}</span>
         <div className="legend-bar" />
-        <span>M\u00e1s cara</span>
+        <span>{"MÃƒÆ’Ã‚Â¡s cara"}</span>
       </div>
 
       {result.stations.length === 0 ? (
@@ -390,8 +398,10 @@ function FilterPanel({
   municipalities,
   selectedProvinceId,
   selectedMunicipalityId,
+  searchQuery,
   onProvinceChange,
   onMunicipalityChange,
+  onSearchChange,
   onShare,
   shareStatus
 }) {
@@ -429,13 +439,23 @@ function FilterPanel({
             ))}
           </select>
         </label>
+        <label className="filter-field">
+          <span>Buscar estaciÃƒÆ’Ã‚Â³n o calle</span>
+          <input
+            className="search-input"
+            type="search"
+            value={searchQuery}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder="Ej. Ballenoil o Avenida Europa"
+          />
+        </label>
       </div>
 
       <p className="share-status">{shareStatus}</p>
 
       <ul className="filter-list compact">
-        <li>Tipo de b\u00fasqueda: estaciones de servicio</li>
-        <li>Venta: venta al p\u00fablico</li>
+        <li>{"Tipo de b\u00fasqueda: estaciones de servicio"}</li>
+        <li>{"Venta: venta al p\u00fablico"}</li>
       </ul>
     </aside>
   );
@@ -458,6 +478,7 @@ function HomePage({ appConfig }) {
   const [selectedMunicipalityId, setSelectedMunicipalityId] = useState(initialMunicipalityId);
   const [favorites, setFavorites] = useState(readStoredFavorites());
   const [favoritesExpanded, setFavoritesExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [shareStatus, setShareStatus] = useState("");
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
@@ -556,7 +577,19 @@ function HomePage({ appConfig }) {
 
   const results = data?.results ?? [];
   const summary = data?.summary ?? [];
-  const favoriteStations = results
+  const normalizedSearch = normalizeSearchText(searchQuery);
+  const filteredResults = results.map((result) => ({
+    ...result,
+    stations: result.stations.filter((station) => {
+      if (!normalizedSearch) {
+        return true;
+      }
+
+      const haystack = normalizeSearchText(`${station.name} ${station.address} ${station.locality || ""}`);
+      return haystack.includes(normalizedSearch);
+    })
+  }));
+  const favoriteStations = filteredResults
     .flatMap((result) =>
       result.stations
         .filter((station) => favorites.includes(station.id))
@@ -597,11 +630,14 @@ function HomePage({ appConfig }) {
             municipalities={municipalities}
             selectedProvinceId={selectedProvinceId}
             selectedMunicipalityId={selectedMunicipalityId}
+            searchQuery={searchQuery}
             onProvinceChange={(provinceId) => {
               setSelectedProvinceId(provinceId);
               setSelectedMunicipalityId("");
+              setSearchQuery("");
             }}
             onMunicipalityChange={setSelectedMunicipalityId}
+            onSearchChange={setSearchQuery}
             onShare={handleShare}
             shareStatus={shareStatus}
           />
@@ -610,7 +646,7 @@ function HomePage({ appConfig }) {
         <section className="top-grid">
           <section className="status-panel">
             <div>
-              <p className="status-label">Actualizaci\u00f3n</p>
+              <p className="status-label">{"Actualizaci\u00f3n"}</p>
               <p className="status-value">
                 {selectedMunicipalityId
                   ? data?.sourceTimestampFormatted ?? (loading ? "Cargando datos..." : "Sin datos")
@@ -659,7 +695,7 @@ function HomePage({ appConfig }) {
           <article className="fuel-card">Cargando datos del municipio seleccionado...</article>
         ) : (
           <main className="cards-grid">
-            {results.map((result) => (
+            {filteredResults.map((result) => (
               <FuelCard
                 key={result.id}
                 result={result}
@@ -717,7 +753,7 @@ function Chart({ points }) {
   const padding = 38;
 
   if (points.length === 0) {
-    return <div className="chart-empty">No hay suficientes datos hist\u00f3ricos para esta estaci\u00f3n.</div>;
+    return <div className="chart-empty">{"No hay suficientes datos histÃƒÆ’Ã‚Â³ricos para esta estaciÃƒÆ’Ã‚Â³n."}</div>;
   }
 
   const coordinates = buildCoordinates(points, width, height, padding);
@@ -827,7 +863,7 @@ function HistoryPage({ appConfig }) {
             <button className="back-button" type="button" onClick={() => navigateTo(backUrl)}>
               Volver al listado
             </button>
-            <p className="eyebrow">Hist\u00f3rico de precios</p>
+            <p className="eyebrow">{"HistÃƒÆ’Ã‚Â³rico de precios"}</p>
             <h1 className="history-title">{data?.station?.name || initialStationName}</h1>
             <p className="hero-text">{data?.station?.address || initialAddress}</p>
             <p className="history-subtitle">{data?.fuel?.name || initialFuelName}</p>
@@ -835,11 +871,11 @@ function HistoryPage({ appConfig }) {
 
           <div className="history-stats">
             <div className="summary-card">
-              <p className="summary-label">\u00daltimo precio</p>
+              <p className="summary-label">{"ÃƒÆ’Ã…Â¡ltimo precio"}</p>
               <p className="summary-value">{formatPrice(data?.stats?.latestPrice)}</p>
             </div>
             <div className="summary-card">
-              <p className="summary-label">M\u00ednimo del tramo</p>
+              <p className="summary-label">{"MÃƒÆ’Ã‚Â­nimo del tramo"}</p>
               <p className="summary-value">{formatPrice(data?.stats?.minPrice)}</p>
             </div>
           </div>
@@ -861,7 +897,7 @@ function HistoryPage({ appConfig }) {
         {error ? (
           <article className="error-panel">{error}</article>
         ) : loading ? (
-          <article className="fuel-card">Cargando hist\u00f3rico...</article>
+          <article className="fuel-card">{"Cargando histÃƒÆ’Ã‚Â³rico..."}</article>
         ) : (
           <section className="history-card">
             <Chart points={data?.points ?? []} />
