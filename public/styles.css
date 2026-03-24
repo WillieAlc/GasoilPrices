@@ -39,18 +39,18 @@ button {
 .app-shell {
   width: min(1320px, calc(100% - 28px));
   margin: 0 auto;
-  padding: 24px 0 34px;
+  padding: 18px 0 24px;
 }
 
 .page-shell {
   display: grid;
-  gap: 18px;
+  gap: 8px;
 }
 
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.9fr);
-  gap: 18px;
+  gap: 8px;
   align-items: stretch;
 }
 
@@ -66,19 +66,19 @@ button {
   backdrop-filter: blur(14px);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 24px;
+  border-radius: 20px;
   box-shadow: var(--shadow);
 }
 
 .hero-copy {
-  padding: 30px;
+  padding: 22px;
 }
 
 .compact-hero {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 180px;
+  min-height: 132px;
 }
 
 .eyebrow,
@@ -90,13 +90,13 @@ button {
   color: var(--accent-dark);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(1.9rem, 3vw, 2.8rem);
+  font-size: clamp(1.55rem, 2.4vw, 2.25rem);
   line-height: 1.02;
 }
 
@@ -104,19 +104,19 @@ h1 {
   margin: 16px 0 0;
   max-width: 58ch;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 0.92rem;
   line-height: 1.55;
 }
 
 .hero-subtext {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   color: var(--accent-dark);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.92rem;
 }
 
 .hero-card {
-  padding: 24px;
+  padding: 18px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 247, 243, 0.88)),
     var(--surface-strong);
@@ -125,14 +125,14 @@ h1 {
 .filter-header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   margin-bottom: 10px;
 }
 
 .filter-grid {
   display: grid;
-  gap: 14px;
+  gap: 8px;
 }
 
 .filter-field {
@@ -142,14 +142,14 @@ h1 {
 
 .filter-field span {
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
 .filter-field select {
   width: 100%;
-  padding: 12px 14px;
-  border-radius: 14px;
+  padding: 8px 10px;
+  border-radius: 12px;
   border: 1px solid rgba(73, 108, 85, 0.12);
   background: rgba(255, 255, 255, 0.92);
   color: var(--text);
@@ -175,12 +175,12 @@ h1 {
   background: rgba(255, 255, 255, 0.9);
   color: var(--accent-dark);
   border: 1px solid rgba(73, 108, 85, 0.12);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
 }
 
 .share-status {
   min-height: 18px;
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   color: var(--muted);
   font-size: 0.8rem;
 }
@@ -199,7 +199,7 @@ h1 {
 .top-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
-  gap: 18px;
+  gap: 8px;
 }
 
 .status-panel {
@@ -207,7 +207,7 @@ h1 {
   justify-content: space-between;
   gap: 16px;
   align-items: center;
-  padding: 18px 22px;
+  padding: 14px 18px;
 }
 
 .status-value {
@@ -218,7 +218,7 @@ h1 {
 .refresh-button {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: white;
-  padding: 10px 18px;
+  padding: 8px 14px;
 }
 
 .refresh-button:hover:not(:disabled),
@@ -238,11 +238,11 @@ h1 {
 .summary-stack {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 8px;
 }
 
 .summary-card {
-  padding: 18px 20px;
+  padding: 14px 16px;
 }
 
 .summary-card-wide {
@@ -251,7 +251,7 @@ h1 {
 
 .summary-value {
   margin: 4px 0 0;
-  font-size: 1.45rem;
+  font-size: 1.18rem;
   font-weight: 700;
 }
 
@@ -264,7 +264,7 @@ h1 {
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 8px;
 }
 
 .fuel-card,
@@ -277,7 +277,7 @@ h1 {
 .card-header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   align-items: start;
   margin-bottom: 14px;
 }
@@ -285,7 +285,7 @@ h1 {
 .card-title,
 .history-title {
   margin: 0;
-  font-size: 1.55rem;
+  font-size: 1.28rem;
   max-width: none;
 }
 
@@ -293,14 +293,14 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: end;
-  gap: 8px;
+  gap: 6px;
 }
 
 .badge,
 .soft-badge {
   border-radius: 999px;
-  padding: 7px 11px;
-  font-size: 0.82rem;
+  padding: 6px 10px;
+  font-size: 0.76rem;
   white-space: nowrap;
 }
 
@@ -318,34 +318,34 @@ h1 {
 .legend {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
 }
 
 .legend-bar {
   flex: 1;
   min-width: 90px;
-  height: 10px;
+  height: 8px;
   border-radius: 999px;
   background: linear-gradient(90deg, #a8ddb1 0%, #f6e08c 50%, #f2a27f 100%);
 }
 
 .station-list {
   list-style: none;
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .station-item {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) minmax(150px, 168px) auto;
-  gap: 12px;
+  grid-template-columns: 38px minmax(0, 1fr) minmax(136px, 150px) auto;
+  gap: 8px;
   align-items: center;
-  padding: 10px 12px;
-  border-radius: 16px;
+  padding: 8px 10px;
+  border-radius: 12px;
   border: 1px solid rgba(67, 90, 78, 0.08);
 }
 
@@ -358,12 +358,12 @@ h1 {
 }
 
 .station-rank {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: rgba(36, 50, 40, 0.88);
   border: 1px solid rgba(36, 50, 40, 0.08);
@@ -378,17 +378,17 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .station-name {
-  font-size: 0.96rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
 .favorite-button {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -397,7 +397,7 @@ h1 {
   border: 1px solid rgba(73, 108, 85, 0.18);
   box-shadow: 0 8px 18px rgba(72, 90, 78, 0.08);
   flex: 0 0 auto;
-  font-size: 1.08rem;
+  font-size: 0.98rem;
 }
 
 .favorite-button.active {
@@ -420,7 +420,7 @@ h1 {
 .station-meta {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   line-height: 1.32;
 }
 
@@ -431,15 +431,15 @@ h1 {
 }
 
 .station-price {
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .station-change {
-  padding: 4px 8px;
+  padding: 3px 7px;
   border-radius: 999px;
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   font-weight: 700;
   white-space: nowrap;
   background: rgba(255, 255, 255, 0.74);
@@ -470,8 +470,8 @@ h1 {
   background: rgba(255, 255, 255, 0.9);
   color: var(--accent-dark);
   border: 1px solid rgba(73, 108, 85, 0.12);
-  padding: 9px 12px;
-  font-size: 0.84rem;
+  padding: 7px 10px;
+  font-size: 0.78rem;
 }
 
 .history-shell {
@@ -481,8 +481,8 @@ h1 {
 .history-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 18px;
-  padding: 24px;
+  gap: 8px;
+  padding: 18px;
 }
 
 .back-button {
@@ -490,26 +490,26 @@ h1 {
 }
 
 .history-subtitle {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   color: var(--accent-dark);
   font-weight: 700;
 }
 
 .history-stats {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .range-panel {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .range-chip {
   background: rgba(255, 255, 255, 0.9);
   color: var(--muted);
-  padding: 10px 14px;
+  padding: 8px 12px;
 }
 
 .range-chip.active {
@@ -534,13 +534,13 @@ h1 {
 
 .axis-label {
   fill: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .app-footer {
   padding: 6px 4px 0;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   text-align: center;
 }
 
@@ -568,8 +568,8 @@ h1 {
   .app-shell,
   .history-shell {
     width: min(100% - 18px, 1180px);
-    padding-top: 16px;
-    padding-bottom: 24px;
+    padding-top: 12px;
+    padding-bottom: 18px;
   }
 
   .summary-stack,
