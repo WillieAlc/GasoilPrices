@@ -231,7 +231,7 @@ function SummaryCard({ item }) {
 }
 
 function Footer({ version }) {
-  return <footer className="app-footer">{`VersiÃƒÆ’Ã‚Â³n ${version} Ãƒâ€šÃ‚Â· beta pÃƒÆ’Ã‚Âºblica`}</footer>;
+  return <footer className="app-footer">{"Versi?n " + version + " ? beta p?blica"}</footer>;
 }
 
 function StationRow({
@@ -277,7 +277,7 @@ function StationRow({
           navigateTo(historyUrl);
         }}
       >
-        {"Mostrar grÃƒÆ’Ã‚Â¡fica"}
+        {"Mostrar gr?fica"}
       </button>
     </li>
   );
@@ -314,7 +314,7 @@ function FavoriteStationRow({ station, onToggleFavorite }) {
             navigateTo(buildHistoryUrl(station, station.productId, station.fuelName));
           }}
         >
-          {"Mostrar grÃƒÆ’Ã‚Â¡fica"}
+          {"Mostrar gr?fica"}
         </button>
       </div>
     </li>
@@ -366,9 +366,9 @@ function FuelCard({ result, favorites, onToggleFavorite }) {
       </div>
 
       <div className="legend">
-        <span>{"MÃƒÆ’Ã‚Â¡s barata"}</span>
+        <span>{"M?s barata"}</span>
         <div className="legend-bar" />
-        <span>{"MÃƒÆ’Ã‚Â¡s cara"}</span>
+        <span>{"M?s cara"}</span>
       </div>
 
       {result.stations.length === 0 ? (
@@ -440,7 +440,7 @@ function FilterPanel({
           </select>
         </label>
         <label className="filter-field">
-          <span>Buscar estaciÃƒÆ’Ã‚Â³n o calle</span>
+          <span>{"Buscar estaci?n o calle"}</span>
           <input
             className="search-input"
             type="search"
@@ -646,7 +646,7 @@ function HomePage({ appConfig }) {
         <section className="top-grid">
           <section className="status-panel">
             <div>
-              <p className="status-label">{"Actualizaci\u00f3n"}</p>
+              <p className="status-label">{"Actualizaci?n"}</p>
               <p className="status-value">
                 {selectedMunicipalityId
                   ? data?.sourceTimestampFormatted ?? (loading ? "Cargando datos..." : "Sin datos")
@@ -670,7 +670,7 @@ function HomePage({ appConfig }) {
               <section className="summary-card summary-card-wide">
                 <p className="summary-label">Media de hoy</p>
                 <p className="summary-value">
-                  {selectedMunicipalityId ? "Sin datos" : "Esperando selecci\u00f3n"}
+                  {selectedMunicipalityId ? "Sin datos" : "Esperando selecci?n"}
                 </p>
                 <p className="summary-meta">Elige un municipio para ver precios y medias.</p>
               </section>
@@ -753,7 +753,7 @@ function Chart({ points }) {
   const padding = 38;
 
   if (points.length === 0) {
-    return <div className="chart-empty">{"No hay suficientes datos histÃƒÆ’Ã‚Â³ricos para esta estaciÃƒÆ’Ã‚Â³n."}</div>;
+    return <div className="chart-empty">{"No hay suficientes datos hist?ricos para esta estaci?n."}</div>;
   }
 
   const coordinates = buildCoordinates(points, width, height, padding);
@@ -863,7 +863,7 @@ function HistoryPage({ appConfig }) {
             <button className="back-button" type="button" onClick={() => navigateTo(backUrl)}>
               Volver al listado
             </button>
-            <p className="eyebrow">{"HistÃƒÆ’Ã‚Â³rico de precios"}</p>
+            <p className="eyebrow">{"Hist?rico de precios"}</p>
             <h1 className="history-title">{data?.station?.name || initialStationName}</h1>
             <p className="hero-text">{data?.station?.address || initialAddress}</p>
             <p className="history-subtitle">{data?.fuel?.name || initialFuelName}</p>
@@ -871,11 +871,11 @@ function HistoryPage({ appConfig }) {
 
           <div className="history-stats">
             <div className="summary-card">
-              <p className="summary-label">{"ÃƒÆ’Ã…Â¡ltimo precio"}</p>
+              <p className="summary-label">{"?ltimo precio"}</p>
               <p className="summary-value">{formatPrice(data?.stats?.latestPrice)}</p>
             </div>
             <div className="summary-card">
-              <p className="summary-label">{"MÃƒÆ’Ã‚Â­nimo del tramo"}</p>
+              <p className="summary-label">{"M?nimo del tramo"}</p>
               <p className="summary-value">{formatPrice(data?.stats?.minPrice)}</p>
             </div>
           </div>
@@ -897,7 +897,7 @@ function HistoryPage({ appConfig }) {
         {error ? (
           <article className="error-panel">{error}</article>
         ) : loading ? (
-          <article className="fuel-card">{"Cargando histÃƒÆ’Ã‚Â³rico..."}</article>
+          <article className="fuel-card">{"Cargando hist?rico..."}</article>
         ) : (
           <section className="history-card">
             <Chart points={data?.points ?? []} />
