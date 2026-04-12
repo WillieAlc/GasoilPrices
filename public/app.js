@@ -21734,6 +21734,10 @@
     { value: 180, label: "6 meses" },
     { value: 365, label: "1 a\xF1o" }
   ];
+  function parseCoordinateValue(value) {
+    const parsed = Number.parseFloat(String(value ?? "").replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
   function readStoredSelection() {
     try {
       const raw = window.localStorage.getItem(selectionStorageKey);
@@ -21861,6 +21865,9 @@
   function navigateTo(url) {
     window.location.href = url;
   }
+  function openInNewTab(url) {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
   function buildHistoryUrl(station, productId, fuelName) {
     const params = new URLSearchParams({
       stationId: station.id,
@@ -21870,7 +21877,34 @@
       address: station.address,
       fuelName
     });
+    if (station.latitude !== null && station.latitude !== void 0) {
+      params.set("lat", String(station.latitude));
+    }
+    if (station.longitude !== null && station.longitude !== void 0) {
+      params.set("lon", String(station.longitude));
+    }
     return `/historial?${params.toString()}`;
+  }
+  function buildGoogleMapsUrl(station) {
+    const latitude = parseCoordinateValue(station.latitude);
+    const longitude = parseCoordinateValue(station.longitude);
+    if (latitude !== null && longitude !== null) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${latitude},${longitude}`)}`;
+    }
+    const fallbackQuery = `${station.name} ${station.address} ${station.locality || ""}`.trim();
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fallbackQuery)}`;
+  }
+  function openStationMap(station) {
+    openInNewTab(buildGoogleMapsUrl(station));
+  }
+  function registerServiceWorker() {
+    if (!("serviceWorker" in navigator)) {
+      return;
+    }
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/service-worker.js").catch(() => {
+      });
+    });
   }
   function updateHomeUrl(provinceId, municipalityId) {
     const url = new URL(window.location.href);
@@ -21946,6 +21980,15 @@
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
         "button",
         {
+          className: "map-button",
+          type: "button",
+          onClick: () => openStationMap(station),
+          children: "Ver mapa"
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+        "button",
+        {
           className: "chart-button",
           type: "button",
           onClick: () => {
@@ -21979,6 +22022,15 @@
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "soft-badge", children: station.fuelName }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "station-price", children: formatPrice(station.price) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "station-change " + getPriceChangeClass(station.priceChange), children: formatPriceChange(station.priceChange) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            className: "map-button",
+            type: "button",
+            onClick: () => openStationMap(station),
+            children: "Ver mapa"
+          }
+        ),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "button",
           {
@@ -22389,6 +22441,8 @@
     const initialFuelName = params.get("fuelName") || "Carburante";
     const initialStationName = params.get("stationName") || "Estaci\xF3n";
     const initialAddress = params.get("address") || "";
+    const initialLatitude = parseCoordinateValue(params.get("lat"));
+    const initialLongitude = parseCoordinateValue(params.get("lon"));
     const backUrl = `/?provinceId=${appConfig.defaultProvinceId || fallbackProvinceId}&municipalityId=${municipalityId}`;
     const [days, setDays] = (0, import_react.useState)(30);
     const [data, setData] = (0, import_react.useState)(null);
@@ -22426,7 +22480,22 @@
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "eyebrow", children: "Hist\xF3rico de precios" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { className: "history-title", children: data?.station?.name || initialStationName }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "hero-text", children: data?.station?.address || initialAddress }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "history-subtitle", children: data?.fuel?.name || initialFuelName })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "history-subtitle", children: data?.fuel?.name || initialFuelName }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "button",
+            {
+              className: "map-button history-map-button",
+              type: "button",
+              onClick: () => openStationMap({
+                name: data?.station?.name || initialStationName,
+                address: data?.station?.address || initialAddress,
+                locality: "",
+                latitude: initialLatitude,
+                longitude: initialLongitude
+              }),
+              children: "Ver en mapa"
+            }
+          )
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "history-stats", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "summary-card", children: [
@@ -22460,6 +22529,25 @@
       defaultMunicipalityId: "",
       analytics: { provider: "ga4", enabled: false, measurementId: "" }
     });
+    const [installPromptEvent, setInstallPromptEvent] = (0, import_react.useState)(null);
+    (0, import_react.useEffect)(() => {
+      registerServiceWorker();
+    }, []);
+    (0, import_react.useEffect)(() => {
+      function handleBeforeInstallPrompt(event) {
+        event.preventDefault();
+        setInstallPromptEvent(event);
+      }
+      function handleAppInstalled() {
+        setInstallPromptEvent(null);
+      }
+      window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.addEventListener("appinstalled", handleAppInstalled);
+      return () => {
+        window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+        window.removeEventListener("appinstalled", handleAppInstalled);
+      };
+    }, []);
     (0, import_react.useEffect)(() => {
       async function loadAppConfig() {
         try {
@@ -22475,8 +22563,22 @@
       }
       loadAppConfig();
     }, []);
+    async function handleInstallApp() {
+      if (!installPromptEvent) {
+        return;
+      }
+      installPromptEvent.prompt();
+      try {
+        await installPromptEvent.userChoice;
+      } finally {
+        setInstallPromptEvent(null);
+      }
+    }
     const isHistory = window.location.pathname === "/historial";
-    return isHistory ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HistoryPage, { appConfig }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HomePage, { appConfig });
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+      isHistory ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HistoryPage, { appConfig }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HomePage, { appConfig }),
+      installPromptEvent ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "install-app-button", type: "button", onClick: handleInstallApp, children: "Instalar app" }) : null
+    ] });
   }
   (0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
 })();

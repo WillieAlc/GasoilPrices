@@ -158,6 +158,7 @@ h1 {
 .share-button,
 .refresh-button,
 .chart-button,
+.map-button,
 .back-button,
 .range-chip,
 .favorite-button {
@@ -223,6 +224,7 @@ h1 {
 
 .refresh-button:hover:not(:disabled),
 .chart-button:hover,
+.map-button:hover,
 .back-button:hover,
 .range-chip:hover,
 .share-button:hover,
@@ -341,7 +343,7 @@ h1 {
 
 .station-item {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) minmax(136px, 150px) auto;
+  grid-template-columns: 38px minmax(0, 1fr) minmax(136px, 150px) auto auto;
   gap: 8px;
   align-items: center;
   padding: 8px 10px;
@@ -547,12 +549,23 @@ h1 {
 }
 
 .chart-button,
+.map-button,
 .back-button {
   background: rgba(255, 255, 255, 0.9);
   color: var(--accent-dark);
   border: 1px solid rgba(73, 108, 85, 0.12);
   padding: 7px 10px;
   font-size: 0.78rem;
+}
+
+.map-button {
+  background: rgba(220, 243, 229, 0.9);
+  border-color: rgba(82, 129, 98, 0.22);
+  color: #2e6042;
+}
+
+.history-map-button {
+  margin-top: 12px;
 }
 
 .history-shell {
@@ -625,6 +638,25 @@ h1 {
   text-align: center;
 }
 
+.install-app-button {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  border-radius: 999px;
+  border: 1px solid rgba(73, 108, 85, 0.22);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: white;
+  padding: 10px 14px;
+  font-weight: 700;
+  box-shadow: 0 14px 28px rgba(65, 83, 72, 0.25);
+  cursor: pointer;
+}
+
+.install-app-button:hover {
+  transform: translateY(-1px);
+}
+
 .chart-empty,
 .empty-state,
 .error-panel {
@@ -676,6 +708,7 @@ h1 {
   }
 
   .station-price-block,
+  .map-button,
   .chart-button {
     grid-column: 2;
   }

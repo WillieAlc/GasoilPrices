@@ -12,7 +12,7 @@ const HISTORY_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const STATION_HISTORY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const DEFAULT_PROVINCE_ID = "28";
 const DEFAULT_MUNICIPALITY_ID = "4282";
-const APP_VERSION = "1.0.0-beta-publica";
+const APP_VERSION = "1.1.0-beta-publica";
 const ANALYTICS_CONFIG = {
   provider: "ga4",
   enabled: Boolean(process.env.GA_MEASUREMENT_ID),
@@ -56,6 +56,7 @@ const CONTENT_TYPES = {
   ".css": "text/css; charset=utf-8",
   ".js": "application/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".map": "application/json; charset=utf-8",
   ".svg": "image/svg+xml"
 };
@@ -68,6 +69,16 @@ function parseEuroPrice(rawPrice) {
   const normalized = String(rawPrice).replace(",", ".").trim();
   const price = Number.parseFloat(normalized);
   return Number.isFinite(price) ? price : null;
+}
+
+function parseCoordinate(rawValue) {
+  if (rawValue === null || rawValue === undefined || rawValue === "") {
+    return null;
+  }
+
+  const normalized = String(rawValue).replace(",", ".").trim();
+  const coordinate = Number.parseFloat(normalized);
+  return Number.isFinite(coordinate) ? coordinate : null;
 }
 
 function formatTimestamp(fecha) {
@@ -132,6 +143,8 @@ function buildFuelList(stations, fuel) {
         locality: station.Localidad,
         municipalityId: station.IDMunicipio,
         provinceId: station.IDProvincia,
+        latitude: parseCoordinate(station.Latitud),
+        longitude: parseCoordinate(station["Longitud (WGS84)"]),
         price,
         productId: fuel.productId,
         fuelName: fuel.label,
@@ -140,7 +153,7 @@ function buildFuelList(stations, fuel) {
       };
     })
     .filter(Boolean)
-    .sort((left, right) => left.price - right.price || left.name.localeCompare(right.name));
+    .sort((left, right) => left.price - right.price || left.name.localeCompare(right.name, "es"));
 
   return {
     id: fuel.key,
@@ -376,7 +389,9 @@ function buildPointFromCurrent(station, date) {
       id: station.id,
       name: station.name,
       address: station.address,
-      locality: station.locality
+      locality: station.locality,
+      latitude: station.latitude ?? null,
+      longitude: station.longitude ?? null
     }
   };
 }
@@ -441,7 +456,9 @@ async function buildStationHistorySeries(stationId, municipalityId, productId, s
         id: station.IDEESS,
         name: station["Rótulo"] || station["Dirección"],
         address: station["Dirección"],
-        locality: (station.Localidad || "").trim()
+        locality: (station.Localidad || "").trim(),
+        latitude: parseCoordinate(station.Latitud),
+        longitude: parseCoordinate(station["Longitud (WGS84)"])
       }
     };
   });
