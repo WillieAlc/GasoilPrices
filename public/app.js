@@ -21977,27 +21977,29 @@
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "station-price", children: formatPrice(station.price) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: `station-change ${getPriceChangeClass(station.priceChange)}`, children: formatPriceChange(station.priceChange) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-        "button",
-        {
-          className: "map-button",
-          type: "button",
-          onClick: () => openStationMap(station),
-          children: "Ver mapa"
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-        "button",
-        {
-          className: "chart-button",
-          type: "button",
-          onClick: () => {
-            saveHomeScroll();
-            navigateTo(historyUrl);
-          },
-          children: "Mostrar gr\xE1fica"
-        }
-      )
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "station-actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            className: "map-button",
+            type: "button",
+            onClick: () => openStationMap(station),
+            children: "Ver mapa"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            className: "chart-button",
+            type: "button",
+            onClick: () => {
+              saveHomeScroll();
+              navigateTo(historyUrl);
+            },
+            children: "Mostrar gr\xE1fica"
+          }
+        )
+      ] })
     ] });
   }
   function FavoriteStationRow({ station, onToggleFavorite }) {
@@ -22022,27 +22024,29 @@
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "soft-badge", children: station.fuelName }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "station-price", children: formatPrice(station.price) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "station-change " + getPriceChangeClass(station.priceChange), children: formatPriceChange(station.priceChange) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            className: "map-button",
-            type: "button",
-            onClick: () => openStationMap(station),
-            children: "Ver mapa"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            className: "chart-button",
-            type: "button",
-            onClick: () => {
-              saveHomeScroll();
-              navigateTo(buildHistoryUrl(station, station.productId, station.fuelName));
-            },
-            children: "Mostrar gr\xE1fica"
-          }
-        )
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "favorite-actions", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "button",
+            {
+              className: "map-button",
+              type: "button",
+              onClick: () => openStationMap(station),
+              children: "Ver mapa"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "button",
+            {
+              className: "chart-button",
+              type: "button",
+              onClick: () => {
+                saveHomeScroll();
+                navigateTo(buildHistoryUrl(station, station.productId, station.fuelName));
+              },
+              children: "Mostrar gr\xE1fica"
+            }
+          )
+        ] })
       ] })
     ] });
   }

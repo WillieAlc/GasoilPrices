@@ -343,12 +343,17 @@ h1 {
 
 .station-item {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) minmax(136px, 150px) auto auto;
+  grid-template-columns: 38px minmax(0, 1fr) minmax(136px, 150px) minmax(122px, 132px);
   gap: 8px;
   align-items: center;
   padding: 8px 10px;
   border-radius: 12px;
   border: 1px solid rgba(67, 90, 78, 0.08);
+}
+
+.station-actions {
+  display: grid;
+  gap: 6px;
 }
 
 .station-rank,
@@ -540,6 +545,12 @@ h1 {
   gap: 8px;
 }
 
+.favorite-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
 .favorite-station-bottom .station-price {
   font-size: 0.9rem;
 }
@@ -556,12 +567,15 @@ h1 {
   border: 1px solid rgba(73, 108, 85, 0.12);
   padding: 7px 10px;
   font-size: 0.78rem;
+  width: 100%;
+  white-space: nowrap;
 }
 
 .map-button {
-  background: rgba(220, 243, 229, 0.9);
-  border-color: rgba(82, 129, 98, 0.22);
-  color: #2e6042;
+  background: linear-gradient(180deg, rgba(213, 239, 224, 0.95), rgba(190, 229, 207, 0.98));
+  border-color: rgba(70, 122, 91, 0.28);
+  color: #1f5a3c;
+  font-weight: 700;
 }
 
 .history-map-button {
@@ -708,13 +722,17 @@ h1 {
   }
 
   .station-price-block,
-  .map-button,
-  .chart-button {
+  .station-actions {
     grid-column: 2;
   }
 
   .station-price-block {
     justify-items: start;
+  }
+
+  .favorite-actions {
+    width: 100%;
+    margin-left: 0;
   }
 
   .card-header,

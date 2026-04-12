@@ -314,23 +314,25 @@ function StationRow({
           {formatPriceChange(station.priceChange)}
         </p>
       </div>
-      <button
-        className="map-button"
-        type="button"
-        onClick={() => openStationMap(station)}
-      >
-        Ver mapa
-      </button>
-      <button
-        className="chart-button"
-        type="button"
-        onClick={() => {
-          saveHomeScroll();
-          navigateTo(historyUrl);
-        }}
-      >
-        {"Mostrar gr\u00e1fica"}
-      </button>
+      <div className="station-actions">
+        <button
+          className="map-button"
+          type="button"
+          onClick={() => openStationMap(station)}
+        >
+          Ver mapa
+        </button>
+        <button
+          className="chart-button"
+          type="button"
+          onClick={() => {
+            saveHomeScroll();
+            navigateTo(historyUrl);
+          }}
+        >
+          {"Mostrar gr\u00e1fica"}
+        </button>
+      </div>
     </li>
   );
 }
@@ -358,23 +360,25 @@ function FavoriteStationRow({ station, onToggleFavorite }) {
         <p className={"station-change " + getPriceChangeClass(station.priceChange)}>
           {formatPriceChange(station.priceChange)}
         </p>
-        <button
-          className="map-button"
-          type="button"
-          onClick={() => openStationMap(station)}
-        >
-          Ver mapa
-        </button>
-        <button
-          className="chart-button"
-          type="button"
-          onClick={() => {
-            saveHomeScroll();
-            navigateTo(buildHistoryUrl(station, station.productId, station.fuelName));
-          }}
-        >
-          {"Mostrar gr\u00e1fica"}
-        </button>
+        <div className="favorite-actions">
+          <button
+            className="map-button"
+            type="button"
+            onClick={() => openStationMap(station)}
+          >
+            Ver mapa
+          </button>
+          <button
+            className="chart-button"
+            type="button"
+            onClick={() => {
+              saveHomeScroll();
+              navigateTo(buildHistoryUrl(station, station.productId, station.fuelName));
+            }}
+          >
+            {"Mostrar gr\u00e1fica"}
+          </button>
+        </div>
       </div>
     </li>
   );
